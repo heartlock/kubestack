@@ -14,7 +14,7 @@ service Networks {
 }
 
 service Subnets {
-	rpc ListSubnets(ListSubnetsRequest) returns (ListSubnetsResponse) {}
+    rpc ListSubnets(ListSubnetsRequest) returns (ListSubnetsResponse) {}
     rpc CreateSubnet(CreateSubnetRequest) returns (CommonResponse) {}
     rpc UpdateSubnet(UpdateSubnetRequest) returns (CommonResponse) {}
     rpc DeleteSubnet(DeleteSubnetRequest) returns (CommonResponse) {}
@@ -33,6 +33,7 @@ service Pods {
 	rpc PodStatus(PodStatusRequest) returns (PodStatusResponse) {}
 }
 
+
 message ActiveRequest {
 }
 
@@ -47,13 +48,14 @@ message CommonResponse {
 
 // Subnet is a representaion of a subnet
 message Subnet {
-	string name                = 1;
-	string uid        = 2;
-	string cidr                = 3;
-	string gateway             = 4;
-	string tenantid            = 5;
-	repeated string dnsservers = 6;
-	repeated Route routes      = 7;
+	string networkID	      = 1;
+	string name                = 2;
+	string uid        = 3;
+	string cidr                = 4;
+	string gateway             = 5;
+	string tenantid            = 6;
+	repeated string dnsservers = 7;
+	repeated Route routes      = 8;
 }
 
 // Route is a representation of an advanced routing rule.
@@ -94,7 +96,7 @@ message UpdateNetworkRequest {
 }
 
 message DeleteNetworkRequest {
-    string networkName = 1;
+    string networkID = 1;
 }
 
 message ListSubnetsRequest {
@@ -103,15 +105,16 @@ message ListSubnetsRequest {
 
 message ListSubnetsResponse {
 	repeated Subnet subnets = 1;
+	string error = 2;
 }
 
 message CreateSubnetRequest {
 	Subnet subnet = 1;
-	string networkID = 2;
 }
 
 message DeleteSubnetRequest {
-	string subnetName = 1;
+	string subnetID = 1;
+	string networkID = 2;
 }
 
 message UpdateSubnetRequest {
@@ -190,6 +193,7 @@ message SetupPodRequest {
     string containerRuntime     = 3;
     string podInfraContainerID  = 4;
     Network network             = 5;
+    string subnetID	=6;
 }
 
 message TeardownPodRequest {
@@ -209,6 +213,6 @@ message PodStatusRequest {
 }
 
 message PodStatusResponse {
-	string ip       = 1;
+    string ip       = 1;
     string error    = 2;
 }

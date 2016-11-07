@@ -83,13 +83,14 @@ func (*CommonResponse) ProtoMessage()    {}
 
 // Subnet is a representaion of a subnet
 type Subnet struct {
-	Name       string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Uid        string   `protobuf:"bytes,2,opt,name=uid,proto3" json:"uid,omitempty"`
-	Cidr       string   `protobuf:"bytes,3,opt,name=cidr,proto3" json:"cidr,omitempty"`
-	Gateway    string   `protobuf:"bytes,4,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Tenantid   string   `protobuf:"bytes,5,opt,name=tenantid,proto3" json:"tenantid,omitempty"`
-	Dnsservers []string `protobuf:"bytes,6,rep,name=dnsservers" json:"dnsservers,omitempty"`
-	Routes     []*Route `protobuf:"bytes,7,rep,name=routes" json:"routes,omitempty"`
+	NetworkID  string   `protobuf:"bytes,1,opt,name=networkID,proto3" json:"networkID,omitempty"`
+	Name       string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Uid        string   `protobuf:"bytes,3,opt,name=uid,proto3" json:"uid,omitempty"`
+	Cidr       string   `protobuf:"bytes,4,opt,name=cidr,proto3" json:"cidr,omitempty"`
+	Gateway    string   `protobuf:"bytes,5,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Tenantid   string   `protobuf:"bytes,6,opt,name=tenantid,proto3" json:"tenantid,omitempty"`
+	Dnsservers []string `protobuf:"bytes,7,rep,name=dnsservers" json:"dnsservers,omitempty"`
+	Routes     []*Route `protobuf:"bytes,8,rep,name=routes" json:"routes,omitempty"`
 }
 
 func (m *Subnet) Reset()         { *m = Subnet{} }
@@ -192,7 +193,7 @@ func (m *UpdateNetworkRequest) GetNetwork() *Network {
 }
 
 type DeleteNetworkRequest struct {
-	NetworkName string `protobuf:"bytes,1,opt,name=networkName,proto3" json:"networkName,omitempty"`
+	NetworkID string `protobuf:"bytes,1,opt,name=networkID,proto3" json:"networkID,omitempty"`
 }
 
 func (m *DeleteNetworkRequest) Reset()         { *m = DeleteNetworkRequest{} }
@@ -209,6 +210,7 @@ func (*ListSubnetsRequest) ProtoMessage()    {}
 
 type ListSubnetsResponse struct {
 	Subnets []*Subnet `protobuf:"bytes,1,rep,name=subnets" json:"subnets,omitempty"`
+	Error   string    `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 }
 
 func (m *ListSubnetsResponse) Reset()         { *m = ListSubnetsResponse{} }
@@ -223,8 +225,7 @@ func (m *ListSubnetsResponse) GetSubnets() []*Subnet {
 }
 
 type CreateSubnetRequest struct {
-	Subnet    *Subnet `protobuf:"bytes,1,opt,name=subnet" json:"subnet,omitempty"`
-	NetworkID string  `protobuf:"bytes,2,opt,name=networkID,proto3" json:"networkID,omitempty"`
+	Subnet *Subnet `protobuf:"bytes,1,opt,name=subnet" json:"subnet,omitempty"`
 }
 
 func (m *CreateSubnetRequest) Reset()         { *m = CreateSubnetRequest{} }
@@ -239,7 +240,8 @@ func (m *CreateSubnetRequest) GetSubnet() *Subnet {
 }
 
 type DeleteSubnetRequest struct {
-	SubnetName string `protobuf:"bytes,1,opt,name=subnetName,proto3" json:"subnetName,omitempty"`
+	SubnetID  string `protobuf:"bytes,1,opt,name=subnetID,proto3" json:"subnetID,omitempty"`
+	NetworkID string `protobuf:"bytes,2,opt,name=networkID,proto3" json:"networkID,omitempty"`
 }
 
 func (m *DeleteSubnetRequest) Reset()         { *m = DeleteSubnetRequest{} }
@@ -412,6 +414,7 @@ type SetupPodRequest struct {
 	ContainerRuntime    string   `protobuf:"bytes,3,opt,name=containerRuntime,proto3" json:"containerRuntime,omitempty"`
 	PodInfraContainerID string   `protobuf:"bytes,4,opt,name=podInfraContainerID,proto3" json:"podInfraContainerID,omitempty"`
 	Network             *Network `protobuf:"bytes,5,opt,name=network" json:"network,omitempty"`
+	SubnetID            string   `protobuf:"bytes,6,opt,name=subnetID,proto3" json:"subnetID,omitempty"`
 }
 
 func (m *SetupPodRequest) Reset()         { *m = SetupPodRequest{} }
