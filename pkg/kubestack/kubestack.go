@@ -56,6 +56,7 @@ func (h *KubeHandler) registerServer() {
 	provider.RegisterLoadBalancersServer(h.server, h)
 	provider.RegisterNetworksServer(h.server, h)
 	provider.RegisterPodsServer(h.server, h)
+	provider.RegisterSubnetsServer(h.server, h)
 }
 
 func (h *KubeHandler) Active(c context.Context, req *provider.ActiveRequest) (*provider.ActivateResponse, error) {
@@ -137,12 +138,71 @@ func (h *KubeHandler) DeleteNetwork(c context.Context, req *provider.DeleteNetwo
 	glog.V(4).Infof("DeleteNetwork with request %v", req.String())
 
 	resp := provider.CommonResponse{}
-	err := h.driver.DeleteNetwork(req.NetworkName)
+	err := h.driver.DeleteNetwork(req.NetworkID)
 	if err != nil {
 		resp.Error = err.Error()
 	}
 
 	glog.V(4).Infof("DeleteNetwork result %v", resp)
+	return &resp, nil
+}
+
+func (h *KubeHandler) ListSubnets(c context.Context, req *provider.ListSubnetsRequest) (*provider.ListSubnetsResponse, error) {
+	glog.V(4).Infof("ListSubnets with request %v", req.String())
+
+	resp := provider.ListSubnetsResponse{}
+	var result []*provider.Subnet
+	var err error
+
+	result, err = h.driver.ListSubnets(req.NetworkID)
+
+	if err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Subnets = result
+	}
+
+	glog.V(4).Infof("ListSubnets result %v", resp)
+	return &resp, nil
+}
+
+func (h *KubeHandler) CreateSubnet(c context.Context, req *provider.CreateSubnetRequest) (*provider.CommonResponse, error) {
+	glog.V(4).Infof("CreateSubnet with request %v", req)
+
+	resp := provider.CommonResponse{}
+	req.Subnet.Tenantid = h.driver.ToTenantID(req.Subnet.Tenantid)
+	err := h.driver.CreateSubnet(req.Subnet)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	glog.V(4).Infof("CreateSubnet result %v", resp)
+	return &resp, nil
+}
+
+func (h *KubeHandler) DeleteSubnet(c context.Context, req *provider.DeleteSubnetRequest) (*provider.CommonResponse, error) {
+	glog.V(4).Infof("DeleteSubnet with request %v", req.String())
+
+	resp := provider.CommonResponse{}
+	err := h.driver.DeleteSubnet(req.SubnetID, req.NetworkID)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	glog.V(4).Infof("DeleteSubnet result %v", resp)
+	return &resp, nil
+}
+
+func (h *KubeHandler) UpdateSubnet(c context.Context, req *provider.UpdateSubnetRequest) (*provider.CommonResponse, error) {
+	glog.V(4).Infof("UpdateSubnet with request %v", req.String())
+
+	resp := provider.CommonResponse{}
+	err := h.driver.UpdateSubnet(req.Subnet)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	glog.V(4).Infof("UpdateSubnet result %v", resp)
 	return &resp, nil
 }
 
@@ -208,7 +268,7 @@ func (h *KubeHandler) SetupPod(c context.Context, req *provider.SetupPodRequest)
 
 	resp := provider.CommonResponse{}
 	// TODO: Add hostname in SetupPod Interface
-	err := h.driver.SetupPod(req.PodName, req.Namespace, req.PodInfraContainerID, req.Network, req.ContainerRuntime)
+	err := h.driver.SetupPod(req.PodName, req.Namespace, req.PodInfraContainerID, req.Network, req.ContainerRuntime, req.SubnetID)
 	if err != nil {
 		glog.Errorf("SetupPod failed: %v", err)
 		resp.Error = err.Error()

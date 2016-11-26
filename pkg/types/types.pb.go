@@ -20,6 +20,11 @@ It has these top-level messages:
 	CreateNetworkRequest
 	UpdateNetworkRequest
 	DeleteNetworkRequest
+	ListSubnetsRequest
+	ListSubnetsResponse
+	CreateSubnetRequest
+	DeleteSubnetRequest
+	UpdateSubnetRequest
 	GetLoadBalancerRequest
 	GetLoadBalancerResponse
 	HostPort
@@ -78,13 +83,14 @@ func (*CommonResponse) ProtoMessage()    {}
 
 // Subnet is a representaion of a subnet
 type Subnet struct {
-	Name       string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Uid        string   `protobuf:"bytes,2,opt,name=uid,proto3" json:"uid,omitempty"`
-	Cidr       string   `protobuf:"bytes,3,opt,name=cidr,proto3" json:"cidr,omitempty"`
-	Gateway    string   `protobuf:"bytes,4,opt,name=gateway,proto3" json:"gateway,omitempty"`
-	Tenantid   string   `protobuf:"bytes,5,opt,name=tenantid,proto3" json:"tenantid,omitempty"`
-	Dnsservers []string `protobuf:"bytes,6,rep,name=dnsservers" json:"dnsservers,omitempty"`
-	Routes     []*Route `protobuf:"bytes,7,rep,name=routes" json:"routes,omitempty"`
+	NetworkID  string   `protobuf:"bytes,1,opt,name=networkID,proto3" json:"networkID,omitempty"`
+	Name       string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Uid        string   `protobuf:"bytes,3,opt,name=uid,proto3" json:"uid,omitempty"`
+	Cidr       string   `protobuf:"bytes,4,opt,name=cidr,proto3" json:"cidr,omitempty"`
+	Gateway    string   `protobuf:"bytes,5,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Tenantid   string   `protobuf:"bytes,6,opt,name=tenantid,proto3" json:"tenantid,omitempty"`
+	Dnsservers []string `protobuf:"bytes,7,rep,name=dnsservers" json:"dnsservers,omitempty"`
+	Routes     []*Route `protobuf:"bytes,8,rep,name=routes" json:"routes,omitempty"`
 }
 
 func (m *Subnet) Reset()         { *m = Subnet{} }
@@ -187,12 +193,75 @@ func (m *UpdateNetworkRequest) GetNetwork() *Network {
 }
 
 type DeleteNetworkRequest struct {
-	NetworkName string `protobuf:"bytes,1,opt,name=networkName,proto3" json:"networkName,omitempty"`
+	NetworkID string `protobuf:"bytes,1,opt,name=networkID,proto3" json:"networkID,omitempty"`
 }
 
 func (m *DeleteNetworkRequest) Reset()         { *m = DeleteNetworkRequest{} }
 func (m *DeleteNetworkRequest) String() string { return proto.CompactTextString(m) }
 func (*DeleteNetworkRequest) ProtoMessage()    {}
+
+type ListSubnetsRequest struct {
+	NetworkID string `protobuf:"bytes,1,opt,name=networkID,proto3" json:"networkID,omitempty"`
+}
+
+func (m *ListSubnetsRequest) Reset()         { *m = ListSubnetsRequest{} }
+func (m *ListSubnetsRequest) String() string { return proto.CompactTextString(m) }
+func (*ListSubnetsRequest) ProtoMessage()    {}
+
+type ListSubnetsResponse struct {
+	Subnets []*Subnet `protobuf:"bytes,1,rep,name=subnets" json:"subnets,omitempty"`
+	Error   string    `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (m *ListSubnetsResponse) Reset()         { *m = ListSubnetsResponse{} }
+func (m *ListSubnetsResponse) String() string { return proto.CompactTextString(m) }
+func (*ListSubnetsResponse) ProtoMessage()    {}
+
+func (m *ListSubnetsResponse) GetSubnets() []*Subnet {
+	if m != nil {
+		return m.Subnets
+	}
+	return nil
+}
+
+type CreateSubnetRequest struct {
+	Subnet *Subnet `protobuf:"bytes,1,opt,name=subnet" json:"subnet,omitempty"`
+}
+
+func (m *CreateSubnetRequest) Reset()         { *m = CreateSubnetRequest{} }
+func (m *CreateSubnetRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateSubnetRequest) ProtoMessage()    {}
+
+func (m *CreateSubnetRequest) GetSubnet() *Subnet {
+	if m != nil {
+		return m.Subnet
+	}
+	return nil
+}
+
+type DeleteSubnetRequest struct {
+	SubnetID  string `protobuf:"bytes,1,opt,name=subnetID,proto3" json:"subnetID,omitempty"`
+	NetworkID string `protobuf:"bytes,2,opt,name=networkID,proto3" json:"networkID,omitempty"`
+}
+
+func (m *DeleteSubnetRequest) Reset()         { *m = DeleteSubnetRequest{} }
+func (m *DeleteSubnetRequest) String() string { return proto.CompactTextString(m) }
+func (*DeleteSubnetRequest) ProtoMessage()    {}
+
+type UpdateSubnetRequest struct {
+	Subnet *Subnet `protobuf:"bytes,1,opt,name=subnet" json:"subnet,omitempty"`
+}
+
+func (m *UpdateSubnetRequest) Reset()         { *m = UpdateSubnetRequest{} }
+func (m *UpdateSubnetRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateSubnetRequest) ProtoMessage()    {}
+
+func (m *UpdateSubnetRequest) GetSubnet() *Subnet {
+	if m != nil {
+		return m.Subnet
+	}
+	return nil
+}
 
 type GetLoadBalancerRequest struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -345,6 +414,7 @@ type SetupPodRequest struct {
 	ContainerRuntime    string   `protobuf:"bytes,3,opt,name=containerRuntime,proto3" json:"containerRuntime,omitempty"`
 	PodInfraContainerID string   `protobuf:"bytes,4,opt,name=podInfraContainerID,proto3" json:"podInfraContainerID,omitempty"`
 	Network             *Network `protobuf:"bytes,5,opt,name=network" json:"network,omitempty"`
+	SubnetID            string   `protobuf:"bytes,6,opt,name=subnetID,proto3" json:"subnetID,omitempty"`
 }
 
 func (m *SetupPodRequest) Reset()         { *m = SetupPodRequest{} }
@@ -417,6 +487,11 @@ func init() {
 	proto.RegisterType((*CreateNetworkRequest)(nil), "types.CreateNetworkRequest")
 	proto.RegisterType((*UpdateNetworkRequest)(nil), "types.UpdateNetworkRequest")
 	proto.RegisterType((*DeleteNetworkRequest)(nil), "types.DeleteNetworkRequest")
+	proto.RegisterType((*ListSubnetsRequest)(nil), "types.ListSubnetsRequest")
+	proto.RegisterType((*ListSubnetsResponse)(nil), "types.ListSubnetsResponse")
+	proto.RegisterType((*CreateSubnetRequest)(nil), "types.CreateSubnetRequest")
+	proto.RegisterType((*DeleteSubnetRequest)(nil), "types.DeleteSubnetRequest")
+	proto.RegisterType((*UpdateSubnetRequest)(nil), "types.UpdateSubnetRequest")
 	proto.RegisterType((*GetLoadBalancerRequest)(nil), "types.GetLoadBalancerRequest")
 	proto.RegisterType((*GetLoadBalancerResponse)(nil), "types.GetLoadBalancerResponse")
 	proto.RegisterType((*HostPort)(nil), "types.HostPort")
@@ -625,6 +700,144 @@ var _Networks_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteNetwork",
 			Handler:    _Networks_DeleteNetwork_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{},
+}
+
+// Client API for Subnets service
+
+type SubnetsClient interface {
+	ListSubnets(ctx context.Context, in *ListSubnetsRequest, opts ...grpc.CallOption) (*ListSubnetsResponse, error)
+	CreateSubnet(ctx context.Context, in *CreateSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	UpdateSubnet(ctx context.Context, in *UpdateSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	DeleteSubnet(ctx context.Context, in *DeleteSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+}
+
+type subnetsClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewSubnetsClient(cc *grpc.ClientConn) SubnetsClient {
+	return &subnetsClient{cc}
+}
+
+func (c *subnetsClient) ListSubnets(ctx context.Context, in *ListSubnetsRequest, opts ...grpc.CallOption) (*ListSubnetsResponse, error) {
+	out := new(ListSubnetsResponse)
+	err := grpc.Invoke(ctx, "/types.Subnets/ListSubnets", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subnetsClient) CreateSubnet(ctx context.Context, in *CreateSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := grpc.Invoke(ctx, "/types.Subnets/CreateSubnet", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subnetsClient) UpdateSubnet(ctx context.Context, in *UpdateSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := grpc.Invoke(ctx, "/types.Subnets/UpdateSubnet", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subnetsClient) DeleteSubnet(ctx context.Context, in *DeleteSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := grpc.Invoke(ctx, "/types.Subnets/DeleteSubnet", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Subnets service
+
+type SubnetsServer interface {
+	ListSubnets(context.Context, *ListSubnetsRequest) (*ListSubnetsResponse, error)
+	CreateSubnet(context.Context, *CreateSubnetRequest) (*CommonResponse, error)
+	UpdateSubnet(context.Context, *UpdateSubnetRequest) (*CommonResponse, error)
+	DeleteSubnet(context.Context, *DeleteSubnetRequest) (*CommonResponse, error)
+}
+
+func RegisterSubnetsServer(s *grpc.Server, srv SubnetsServer) {
+	s.RegisterService(&_Subnets_serviceDesc, srv)
+}
+
+func _Subnets_ListSubnets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListSubnetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(SubnetsServer).ListSubnets(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Subnets_CreateSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(CreateSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(SubnetsServer).CreateSubnet(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Subnets_UpdateSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(UpdateSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(SubnetsServer).UpdateSubnet(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Subnets_DeleteSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(DeleteSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(SubnetsServer).DeleteSubnet(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+var _Subnets_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "types.Subnets",
+	HandlerType: (*SubnetsServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListSubnets",
+			Handler:    _Subnets_ListSubnets_Handler,
+		},
+		{
+			MethodName: "CreateSubnet",
+			Handler:    _Subnets_CreateSubnet_Handler,
+		},
+		{
+			MethodName: "UpdateSubnet",
+			Handler:    _Subnets_UpdateSubnet_Handler,
+		},
+		{
+			MethodName: "DeleteSubnet",
+			Handler:    _Subnets_DeleteSubnet_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{},
