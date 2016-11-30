@@ -14,17 +14,30 @@ It has these top-level messages:
 	CommonResponse
 	Subnet
 	Route
+	Rule
 	Network
 	GetNetworkRequest
 	GetNetworkResponse
 	CreateNetworkRequest
 	UpdateNetworkRequest
 	DeleteNetworkRequest
+	ListNetworkRequest
+	ListNetworkResponse
 	ListSubnetsRequest
 	ListSubnetsResponse
 	CreateSubnetRequest
+	GetSubnetRequest
+	GetSubnetResponse
 	DeleteSubnetRequest
 	UpdateSubnetRequest
+	ConnectSubnetsRequest
+	ListRulesRequest
+	ListRulesResponse
+	GetRuleRequest
+	GetRuleResponse
+	CreateRuleRequest
+	DeleteRuleRequest
+	UpdateRuleRequest
 	GetLoadBalancerRequest
 	GetLoadBalancerResponse
 	HostPort
@@ -115,6 +128,27 @@ func (m *Route) Reset()         { *m = Route{} }
 func (m *Route) String() string { return proto.CompactTextString(m) }
 func (*Route) ProtoMessage()    {}
 
+// Rule is a representaion of a Rule
+type Rule struct {
+	Name                 string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Id                   string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	TenantID             string `protobuf:"bytes,3,opt,name=tenantID,proto3" json:"tenantID,omitempty"`
+	PolicyID             string `protobuf:"bytes,4,opt,name=policyID,proto3" json:"policyID,omitempty"`
+	Protocol             string `protobuf:"bytes,5,opt,name=protocol,proto3" json:"protocol,omitempty"`
+	Action               string `protobuf:"bytes,6,opt,name=action,proto3" json:"action,omitempty"`
+	IPVersion            int32  `protobuf:"varint,7,opt,name=iPVersion,proto3" json:"iPVersion,omitempty"`
+	SourceIPAddress      string `protobuf:"bytes,8,opt,name=sourceIPAddress,proto3" json:"sourceIPAddress,omitempty"`
+	DestinationIPAddress string `protobuf:"bytes,9,opt,name=destinationIPAddress,proto3" json:"destinationIPAddress,omitempty"`
+	SourcePort           string `protobuf:"bytes,10,opt,name=sourcePort,proto3" json:"sourcePort,omitempty"`
+	DestinationPort      string `protobuf:"bytes,11,opt,name=destinationPort,proto3" json:"destinationPort,omitempty"`
+	Shared               bool   `protobuf:"varint,12,opt,name=shared,proto3" json:"shared,omitempty"`
+	Enabled              bool   `protobuf:"varint,13,opt,name=enabled,proto3" json:"enabled,omitempty"`
+}
+
+func (m *Rule) Reset()         { *m = Rule{} }
+func (m *Rule) String() string { return proto.CompactTextString(m) }
+func (*Rule) ProtoMessage()    {}
+
 type Network struct {
 	Name      string    `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Uid       string    `protobuf:"bytes,2,opt,name=uid,proto3" json:"uid,omitempty"`
@@ -200,6 +234,30 @@ func (m *DeleteNetworkRequest) Reset()         { *m = DeleteNetworkRequest{} }
 func (m *DeleteNetworkRequest) String() string { return proto.CompactTextString(m) }
 func (*DeleteNetworkRequest) ProtoMessage()    {}
 
+type ListNetworkRequest struct {
+	TenantID string `protobuf:"bytes,1,opt,name=tenantID,proto3" json:"tenantID,omitempty"`
+}
+
+func (m *ListNetworkRequest) Reset()         { *m = ListNetworkRequest{} }
+func (m *ListNetworkRequest) String() string { return proto.CompactTextString(m) }
+func (*ListNetworkRequest) ProtoMessage()    {}
+
+type ListNetworkResponse struct {
+	Networks []*Network `protobuf:"bytes,1,rep,name=networks" json:"networks,omitempty"`
+	Error    string     `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (m *ListNetworkResponse) Reset()         { *m = ListNetworkResponse{} }
+func (m *ListNetworkResponse) String() string { return proto.CompactTextString(m) }
+func (*ListNetworkResponse) ProtoMessage()    {}
+
+func (m *ListNetworkResponse) GetNetworks() []*Network {
+	if m != nil {
+		return m.Networks
+	}
+	return nil
+}
+
 type ListSubnetsRequest struct {
 	NetworkID string `protobuf:"bytes,1,opt,name=networkID,proto3" json:"networkID,omitempty"`
 }
@@ -239,6 +297,30 @@ func (m *CreateSubnetRequest) GetSubnet() *Subnet {
 	return nil
 }
 
+type GetSubnetRequest struct {
+	SubnetID string `protobuf:"bytes,1,opt,name=subnetID,proto3" json:"subnetID,omitempty"`
+}
+
+func (m *GetSubnetRequest) Reset()         { *m = GetSubnetRequest{} }
+func (m *GetSubnetRequest) String() string { return proto.CompactTextString(m) }
+func (*GetSubnetRequest) ProtoMessage()    {}
+
+type GetSubnetResponse struct {
+	Subnet *Subnet `protobuf:"bytes,1,opt,name=subnet" json:"subnet,omitempty"`
+	Error  string  `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (m *GetSubnetResponse) Reset()         { *m = GetSubnetResponse{} }
+func (m *GetSubnetResponse) String() string { return proto.CompactTextString(m) }
+func (*GetSubnetResponse) ProtoMessage()    {}
+
+func (m *GetSubnetResponse) GetSubnet() *Subnet {
+	if m != nil {
+		return m.Subnet
+	}
+	return nil
+}
+
 type DeleteSubnetRequest struct {
 	SubnetID  string `protobuf:"bytes,1,opt,name=subnetID,proto3" json:"subnetID,omitempty"`
 	NetworkID string `protobuf:"bytes,2,opt,name=networkID,proto3" json:"networkID,omitempty"`
@@ -259,6 +341,115 @@ func (*UpdateSubnetRequest) ProtoMessage()    {}
 func (m *UpdateSubnetRequest) GetSubnet() *Subnet {
 	if m != nil {
 		return m.Subnet
+	}
+	return nil
+}
+
+type ConnectSubnetsRequest struct {
+	Subnet1 *Subnet `protobuf:"bytes,1,opt,name=subnet1" json:"subnet1,omitempty"`
+	Subnet2 *Subnet `protobuf:"bytes,2,opt,name=subnet2" json:"subnet2,omitempty"`
+}
+
+func (m *ConnectSubnetsRequest) Reset()         { *m = ConnectSubnetsRequest{} }
+func (m *ConnectSubnetsRequest) String() string { return proto.CompactTextString(m) }
+func (*ConnectSubnetsRequest) ProtoMessage()    {}
+
+func (m *ConnectSubnetsRequest) GetSubnet1() *Subnet {
+	if m != nil {
+		return m.Subnet1
+	}
+	return nil
+}
+
+func (m *ConnectSubnetsRequest) GetSubnet2() *Subnet {
+	if m != nil {
+		return m.Subnet2
+	}
+	return nil
+}
+
+type ListRulesRequest struct {
+	TenantID string `protobuf:"bytes,1,opt,name=tenantID,proto3" json:"tenantID,omitempty"`
+}
+
+func (m *ListRulesRequest) Reset()         { *m = ListRulesRequest{} }
+func (m *ListRulesRequest) String() string { return proto.CompactTextString(m) }
+func (*ListRulesRequest) ProtoMessage()    {}
+
+type ListRulesResponse struct {
+	Rules []*Rule `protobuf:"bytes,1,rep,name=rules" json:"rules,omitempty"`
+	Error string  `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (m *ListRulesResponse) Reset()         { *m = ListRulesResponse{} }
+func (m *ListRulesResponse) String() string { return proto.CompactTextString(m) }
+func (*ListRulesResponse) ProtoMessage()    {}
+
+func (m *ListRulesResponse) GetRules() []*Rule {
+	if m != nil {
+		return m.Rules
+	}
+	return nil
+}
+
+type GetRuleRequest struct {
+	RuleID string `protobuf:"bytes,1,opt,name=ruleID,proto3" json:"ruleID,omitempty"`
+}
+
+func (m *GetRuleRequest) Reset()         { *m = GetRuleRequest{} }
+func (m *GetRuleRequest) String() string { return proto.CompactTextString(m) }
+func (*GetRuleRequest) ProtoMessage()    {}
+
+type GetRuleResponse struct {
+	Rule  *Rule  `protobuf:"bytes,1,opt,name=rule" json:"rule,omitempty"`
+	Error string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (m *GetRuleResponse) Reset()         { *m = GetRuleResponse{} }
+func (m *GetRuleResponse) String() string { return proto.CompactTextString(m) }
+func (*GetRuleResponse) ProtoMessage()    {}
+
+func (m *GetRuleResponse) GetRule() *Rule {
+	if m != nil {
+		return m.Rule
+	}
+	return nil
+}
+
+type CreateRuleRequest struct {
+	Rule *Rule `protobuf:"bytes,1,opt,name=rule" json:"rule,omitempty"`
+}
+
+func (m *CreateRuleRequest) Reset()         { *m = CreateRuleRequest{} }
+func (m *CreateRuleRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateRuleRequest) ProtoMessage()    {}
+
+func (m *CreateRuleRequest) GetRule() *Rule {
+	if m != nil {
+		return m.Rule
+	}
+	return nil
+}
+
+type DeleteRuleRequest struct {
+	RuleID string `protobuf:"bytes,1,opt,name=ruleID,proto3" json:"ruleID,omitempty"`
+}
+
+func (m *DeleteRuleRequest) Reset()         { *m = DeleteRuleRequest{} }
+func (m *DeleteRuleRequest) String() string { return proto.CompactTextString(m) }
+func (*DeleteRuleRequest) ProtoMessage()    {}
+
+type UpdateRuleRequest struct {
+	Rule *Rule `protobuf:"bytes,1,opt,name=rule" json:"rule,omitempty"`
+}
+
+func (m *UpdateRuleRequest) Reset()         { *m = UpdateRuleRequest{} }
+func (m *UpdateRuleRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateRuleRequest) ProtoMessage()    {}
+
+func (m *UpdateRuleRequest) GetRule() *Rule {
+	if m != nil {
+		return m.Rule
 	}
 	return nil
 }
@@ -481,17 +672,30 @@ func init() {
 	proto.RegisterType((*CommonResponse)(nil), "types.CommonResponse")
 	proto.RegisterType((*Subnet)(nil), "types.Subnet")
 	proto.RegisterType((*Route)(nil), "types.Route")
+	proto.RegisterType((*Rule)(nil), "types.Rule")
 	proto.RegisterType((*Network)(nil), "types.Network")
 	proto.RegisterType((*GetNetworkRequest)(nil), "types.GetNetworkRequest")
 	proto.RegisterType((*GetNetworkResponse)(nil), "types.GetNetworkResponse")
 	proto.RegisterType((*CreateNetworkRequest)(nil), "types.CreateNetworkRequest")
 	proto.RegisterType((*UpdateNetworkRequest)(nil), "types.UpdateNetworkRequest")
 	proto.RegisterType((*DeleteNetworkRequest)(nil), "types.DeleteNetworkRequest")
+	proto.RegisterType((*ListNetworkRequest)(nil), "types.ListNetworkRequest")
+	proto.RegisterType((*ListNetworkResponse)(nil), "types.ListNetworkResponse")
 	proto.RegisterType((*ListSubnetsRequest)(nil), "types.ListSubnetsRequest")
 	proto.RegisterType((*ListSubnetsResponse)(nil), "types.ListSubnetsResponse")
 	proto.RegisterType((*CreateSubnetRequest)(nil), "types.CreateSubnetRequest")
+	proto.RegisterType((*GetSubnetRequest)(nil), "types.GetSubnetRequest")
+	proto.RegisterType((*GetSubnetResponse)(nil), "types.GetSubnetResponse")
 	proto.RegisterType((*DeleteSubnetRequest)(nil), "types.DeleteSubnetRequest")
 	proto.RegisterType((*UpdateSubnetRequest)(nil), "types.UpdateSubnetRequest")
+	proto.RegisterType((*ConnectSubnetsRequest)(nil), "types.ConnectSubnetsRequest")
+	proto.RegisterType((*ListRulesRequest)(nil), "types.ListRulesRequest")
+	proto.RegisterType((*ListRulesResponse)(nil), "types.ListRulesResponse")
+	proto.RegisterType((*GetRuleRequest)(nil), "types.GetRuleRequest")
+	proto.RegisterType((*GetRuleResponse)(nil), "types.GetRuleResponse")
+	proto.RegisterType((*CreateRuleRequest)(nil), "types.CreateRuleRequest")
+	proto.RegisterType((*DeleteRuleRequest)(nil), "types.DeleteRuleRequest")
+	proto.RegisterType((*UpdateRuleRequest)(nil), "types.UpdateRuleRequest")
 	proto.RegisterType((*GetLoadBalancerRequest)(nil), "types.GetLoadBalancerRequest")
 	proto.RegisterType((*GetLoadBalancerResponse)(nil), "types.GetLoadBalancerResponse")
 	proto.RegisterType((*HostPort)(nil), "types.HostPort")
@@ -522,6 +726,7 @@ type NetworksClient interface {
 	CreateNetwork(ctx context.Context, in *CreateNetworkRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 	UpdateNetwork(ctx context.Context, in *UpdateNetworkRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 	DeleteNetwork(ctx context.Context, in *DeleteNetworkRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	ListNetworks(ctx context.Context, in *ListNetworkRequest, opts ...grpc.CallOption) (*ListNetworkResponse, error)
 }
 
 type networksClient struct {
@@ -586,6 +791,15 @@ func (c *networksClient) DeleteNetwork(ctx context.Context, in *DeleteNetworkReq
 	return out, nil
 }
 
+func (c *networksClient) ListNetworks(ctx context.Context, in *ListNetworkRequest, opts ...grpc.CallOption) (*ListNetworkResponse, error) {
+	out := new(ListNetworkResponse)
+	err := grpc.Invoke(ctx, "/types.Networks/ListNetworks", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Networks service
 
 type NetworksServer interface {
@@ -595,6 +809,7 @@ type NetworksServer interface {
 	CreateNetwork(context.Context, *CreateNetworkRequest) (*CommonResponse, error)
 	UpdateNetwork(context.Context, *UpdateNetworkRequest) (*CommonResponse, error)
 	DeleteNetwork(context.Context, *DeleteNetworkRequest) (*CommonResponse, error)
+	ListNetworks(context.Context, *ListNetworkRequest) (*ListNetworkResponse, error)
 }
 
 func RegisterNetworksServer(s *grpc.Server, srv NetworksServer) {
@@ -673,6 +888,18 @@ func _Networks_DeleteNetwork_Handler(srv interface{}, ctx context.Context, dec f
 	return out, nil
 }
 
+func _Networks_ListNetworks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListNetworkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(NetworksServer).ListNetworks(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 var _Networks_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "types.Networks",
 	HandlerType: (*NetworksServer)(nil),
@@ -701,6 +928,10 @@ var _Networks_serviceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteNetwork",
 			Handler:    _Networks_DeleteNetwork_Handler,
 		},
+		{
+			MethodName: "ListNetworks",
+			Handler:    _Networks_ListNetworks_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{},
 }
@@ -710,8 +941,10 @@ var _Networks_serviceDesc = grpc.ServiceDesc{
 type SubnetsClient interface {
 	ListSubnets(ctx context.Context, in *ListSubnetsRequest, opts ...grpc.CallOption) (*ListSubnetsResponse, error)
 	CreateSubnet(ctx context.Context, in *CreateSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	GetSubnet(ctx context.Context, in *GetSubnetRequest, opts ...grpc.CallOption) (*GetSubnetResponse, error)
 	UpdateSubnet(ctx context.Context, in *UpdateSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 	DeleteSubnet(ctx context.Context, in *DeleteSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	ConnectSubnets(ctx context.Context, in *ConnectSubnetsRequest, opts ...grpc.CallOption) (*CommonResponse, error)
 }
 
 type subnetsClient struct {
@@ -740,6 +973,15 @@ func (c *subnetsClient) CreateSubnet(ctx context.Context, in *CreateSubnetReques
 	return out, nil
 }
 
+func (c *subnetsClient) GetSubnet(ctx context.Context, in *GetSubnetRequest, opts ...grpc.CallOption) (*GetSubnetResponse, error) {
+	out := new(GetSubnetResponse)
+	err := grpc.Invoke(ctx, "/types.Subnets/GetSubnet", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *subnetsClient) UpdateSubnet(ctx context.Context, in *UpdateSubnetRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
 	out := new(CommonResponse)
 	err := grpc.Invoke(ctx, "/types.Subnets/UpdateSubnet", in, out, c.cc, opts...)
@@ -758,13 +1000,24 @@ func (c *subnetsClient) DeleteSubnet(ctx context.Context, in *DeleteSubnetReques
 	return out, nil
 }
 
+func (c *subnetsClient) ConnectSubnets(ctx context.Context, in *ConnectSubnetsRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := grpc.Invoke(ctx, "/types.Subnets/ConnectSubnets", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Subnets service
 
 type SubnetsServer interface {
 	ListSubnets(context.Context, *ListSubnetsRequest) (*ListSubnetsResponse, error)
 	CreateSubnet(context.Context, *CreateSubnetRequest) (*CommonResponse, error)
+	GetSubnet(context.Context, *GetSubnetRequest) (*GetSubnetResponse, error)
 	UpdateSubnet(context.Context, *UpdateSubnetRequest) (*CommonResponse, error)
 	DeleteSubnet(context.Context, *DeleteSubnetRequest) (*CommonResponse, error)
+	ConnectSubnets(context.Context, *ConnectSubnetsRequest) (*CommonResponse, error)
 }
 
 func RegisterSubnetsServer(s *grpc.Server, srv SubnetsServer) {
@@ -795,6 +1048,18 @@ func _Subnets_CreateSubnet_Handler(srv interface{}, ctx context.Context, dec fun
 	return out, nil
 }
 
+func _Subnets_GetSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(GetSubnetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(SubnetsServer).GetSubnet(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func _Subnets_UpdateSubnet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
 	in := new(UpdateSubnetRequest)
 	if err := dec(in); err != nil {
@@ -819,6 +1084,18 @@ func _Subnets_DeleteSubnet_Handler(srv interface{}, ctx context.Context, dec fun
 	return out, nil
 }
 
+func _Subnets_ConnectSubnets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ConnectSubnetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(SubnetsServer).ConnectSubnets(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 var _Subnets_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "types.Subnets",
 	HandlerType: (*SubnetsServer)(nil),
@@ -832,12 +1109,185 @@ var _Subnets_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Subnets_CreateSubnet_Handler,
 		},
 		{
+			MethodName: "GetSubnet",
+			Handler:    _Subnets_GetSubnet_Handler,
+		},
+		{
 			MethodName: "UpdateSubnet",
 			Handler:    _Subnets_UpdateSubnet_Handler,
 		},
 		{
 			MethodName: "DeleteSubnet",
 			Handler:    _Subnets_DeleteSubnet_Handler,
+		},
+		{
+			MethodName: "ConnectSubnets",
+			Handler:    _Subnets_ConnectSubnets_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{},
+}
+
+// Client API for Fwaas service
+
+type FwaasClient interface {
+	ListRules(ctx context.Context, in *ListRulesRequest, opts ...grpc.CallOption) (*ListRulesResponse, error)
+	GetRule(ctx context.Context, in *GetRuleRequest, opts ...grpc.CallOption) (*GetRuleResponse, error)
+	CreateRule(ctx context.Context, in *CreateRuleRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	UpdateRule(ctx context.Context, in *UpdateRuleRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+	DeleteRule(ctx context.Context, in *DeleteRuleRequest, opts ...grpc.CallOption) (*CommonResponse, error)
+}
+
+type fwaasClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewFwaasClient(cc *grpc.ClientConn) FwaasClient {
+	return &fwaasClient{cc}
+}
+
+func (c *fwaasClient) ListRules(ctx context.Context, in *ListRulesRequest, opts ...grpc.CallOption) (*ListRulesResponse, error) {
+	out := new(ListRulesResponse)
+	err := grpc.Invoke(ctx, "/types.Fwaas/ListRules", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fwaasClient) GetRule(ctx context.Context, in *GetRuleRequest, opts ...grpc.CallOption) (*GetRuleResponse, error) {
+	out := new(GetRuleResponse)
+	err := grpc.Invoke(ctx, "/types.Fwaas/GetRule", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fwaasClient) CreateRule(ctx context.Context, in *CreateRuleRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := grpc.Invoke(ctx, "/types.Fwaas/CreateRule", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fwaasClient) UpdateRule(ctx context.Context, in *UpdateRuleRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := grpc.Invoke(ctx, "/types.Fwaas/UpdateRule", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fwaasClient) DeleteRule(ctx context.Context, in *DeleteRuleRequest, opts ...grpc.CallOption) (*CommonResponse, error) {
+	out := new(CommonResponse)
+	err := grpc.Invoke(ctx, "/types.Fwaas/DeleteRule", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Fwaas service
+
+type FwaasServer interface {
+	ListRules(context.Context, *ListRulesRequest) (*ListRulesResponse, error)
+	GetRule(context.Context, *GetRuleRequest) (*GetRuleResponse, error)
+	CreateRule(context.Context, *CreateRuleRequest) (*CommonResponse, error)
+	UpdateRule(context.Context, *UpdateRuleRequest) (*CommonResponse, error)
+	DeleteRule(context.Context, *DeleteRuleRequest) (*CommonResponse, error)
+}
+
+func RegisterFwaasServer(s *grpc.Server, srv FwaasServer) {
+	s.RegisterService(&_Fwaas_serviceDesc, srv)
+}
+
+func _Fwaas_ListRules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListRulesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(FwaasServer).ListRules(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Fwaas_GetRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(GetRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(FwaasServer).GetRule(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Fwaas_CreateRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(CreateRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(FwaasServer).CreateRule(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Fwaas_UpdateRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(UpdateRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(FwaasServer).UpdateRule(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Fwaas_DeleteRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(DeleteRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(FwaasServer).DeleteRule(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+var _Fwaas_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "types.Fwaas",
+	HandlerType: (*FwaasServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListRules",
+			Handler:    _Fwaas_ListRules_Handler,
+		},
+		{
+			MethodName: "GetRule",
+			Handler:    _Fwaas_GetRule_Handler,
+		},
+		{
+			MethodName: "CreateRule",
+			Handler:    _Fwaas_CreateRule_Handler,
+		},
+		{
+			MethodName: "UpdateRule",
+			Handler:    _Fwaas_UpdateRule_Handler,
+		},
+		{
+			MethodName: "DeleteRule",
+			Handler:    _Fwaas_DeleteRule_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{},

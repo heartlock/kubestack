@@ -147,6 +147,25 @@ func (h *KubeHandler) DeleteNetwork(c context.Context, req *provider.DeleteNetwo
 	return &resp, nil
 }
 
+func (h *KubeHandler) ListNetworks(c context.Context, req *provider.ListNetworkRequest) (*provider.ListNetworkResponse, error) {
+	glog.V(4).Infof("ListNetworks with request %v", req.String())
+
+	resp := provider.ListNetworkResponse{}
+	var result []*provider.Network
+	var err error
+
+	result, err = h.driver.ListNetworks(req.TenantID)
+
+	if err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Networks = result
+	}
+
+	glog.V(4).Infof("ListNetworks result %v", resp)
+	return &resp, nil
+}
+
 func (h *KubeHandler) ListSubnets(c context.Context, req *provider.ListSubnetsRequest) (*provider.ListSubnetsResponse, error) {
 	glog.V(4).Infof("ListSubnets with request %v", req.String())
 
@@ -180,6 +199,23 @@ func (h *KubeHandler) CreateSubnet(c context.Context, req *provider.CreateSubnet
 	return &resp, nil
 }
 
+func (h *KubeHandler) GetSubnet(c context.Context, req *provider.GetSubnetRequest) (*provider.GetSubnetResponse, error) {
+	glog.V(4).Infof("GetSubnet with request %v", req.String())
+
+	resp := provider.GetSubnetResponse{}
+	var result *provider.Subnet
+	var err error
+	result, err = h.driver.GetSubnet(req.SubnetID)
+	if err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Subnet = result
+	}
+
+	glog.V(4).Infof("GetSubnet result %v", resp)
+	return &resp, nil
+}
+
 func (h *KubeHandler) DeleteSubnet(c context.Context, req *provider.DeleteSubnetRequest) (*provider.CommonResponse, error) {
 	glog.V(4).Infof("DeleteSubnet with request %v", req.String())
 
@@ -203,6 +239,19 @@ func (h *KubeHandler) UpdateSubnet(c context.Context, req *provider.UpdateSubnet
 	}
 
 	glog.V(4).Infof("UpdateSubnet result %v", resp)
+	return &resp, nil
+}
+
+func (h *KubeHandler) ConnectSubnets(c context.Context, req *provider.ConnectSubnetsRequest) (*provider.CommonResponse, error) {
+	glog.V(4).Infof("ConnectSubnets with request %v", req.String())
+
+	resp := provider.CommonResponse{}
+	err := h.driver.ConnectSubnets(req.Subnet1, req.Subnet2)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	glog.V(4).Infof("ConnectSubnets result %v", resp)
 	return &resp, nil
 }
 
