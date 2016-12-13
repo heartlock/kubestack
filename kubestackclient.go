@@ -53,6 +53,9 @@ type Subnets interface {
 	CreateSubnet(subnet *types.Subnet) error
 	DeleteSubnet(subnetID string, networkID string) error
 	UpdateSubnet(subnet *types.Subnet) error
+	ConnectSubnets(subnet1, subnet2 *types.Subnet) error
+	DisconnectSubnets(subnet1, subnet2 *types.Subnet) error
+	GetRouterNS(subnetID string) (string, error)
 }
 
 type NeutronProvider struct {
@@ -290,6 +293,69 @@ func (r *NeutronProvider) DeleteSubnet(subnetID string, networkID string) error 
 	return nil
 }
 
+//Connect two subnets
+func (r *NeutronProvider) ConnectSubnets(subnet1, subnet2 *types.Subnet) error {
+	resp, err := r.subnetClient.ConnectSubnets(
+		context.Background(),
+		&types.ConnectSubnetsRequest{
+			Subnet1: subnet1,
+			Subnet2: subnet2,
+		},
+	)
+	if err != nil || resp.Error != "" {
+		if err == nil {
+			err = errors.New(resp.Error)
+		}
+		glog.Warningf("NetworkProvider Connet two subnets %s ,%s failed: %v", subnet1.Name, subnet2.Name, err)
+		return err
+	}
+
+	return nil
+}
+
+//Disonnect two subnets
+func (r *NeutronProvider) DisconnectSubnets(subnet1, subnet2 *types.Subnet) error {
+	resp, err := r.subnetClient.DisconnectSubnets(
+		context.Background(),
+		&types.DisconnectSubnetsRequest{
+			Subnet1: subnet1,
+			Subnet2: subnet2,
+		},
+	)
+	if err != nil || resp.Error != "" {
+		if err == nil {
+			err = errors.New(resp.Error)
+		}
+		glog.Warningf("NetworkProvider Disconnet two subnets %s ,%s failed: %v", subnet1.Name, subnet2.Name, err)
+		return err
+	}
+
+	return nil
+}
+
+// Get routerNS
+func (r *NeutronProvider) GetRouterNS(subnetID string) (string, error) {
+	if subnetID == "" {
+		return "", errors.New("subnetID is null")
+	}
+
+	resp, err := r.subnetClient.GetRouterNS(
+		context.Background(),
+		&types.GetRouterNSRequest{
+			SubnetID: subnetID,
+		},
+	)
+	if err != nil || resp.Error != "" {
+		if err == nil {
+			err = errors.New(resp.Error)
+		}
+		glog.Warningf("SubnetProvider get routerNS failed: %v", err)
+		return "", err
+	}
+
+	return resp.RouterNS, nil
+}
+
 //Update subnet
 func (r *NeutronProvider) UpdateSubnet(subnet *types.Subnet) error {
 	resp, err := r.subnetClient.UpdateSubnet(
@@ -380,7 +446,7 @@ func (r *NeutronProvider) PodStatus(podName, namespace, podInfraContainerID stri
 }
 
 func main() {
-	neutron, err := InitNeutronProviders("127.0.0.1:4237")
+	neutron, err := InitNeutronProviders("10.10.103.57:4237")
 	if err != nil {
 		fmt.Errorf("init client fail")
 	}
@@ -392,12 +458,18 @@ func main() {
 	}
 	fmt.Println("%v", getNetworkResponse)
 
-	testNetName := "testnet4"
-	/*var subnets []*types.Subnet
+	testNetName := "testnet1"
+	var subnets []*types.Subnet
 	subnet := &types.Subnet{
-		Name:    "subnet1",
+		Name:    "net1-sub1",
 		Cidr:    "192.168.11.0/24",
 		Gateway: "192.168.11.1",
+	}
+	subnets = append(subnets, subnet)
+	subnet = &types.Subnet{
+		Name:    "net1-sub2",
+		Cidr:    "192.168.12.0/24",
+		Gateway: "192.168.12.1",
 	}
 	subnets = append(subnets, subnet)
 	network := &types.Network{
@@ -417,12 +489,19 @@ func main() {
 		}
 	}()*/
 
-	getNetworkResponse, err = neutron.Networks().GetNetwork(testNetName)
+	/*getNetworkResponse, err = neutron.Networks().GetNetwork("testnet3")
 	if err != nil {
 		glog.Errorf("NetworkProvider get network failed: ", err)
 		return
 	}
-	fmt.Println("%v", getNetworkResponse)
+	fmt.Println("%v", getNetworkResponse)*/
+
+	/*routerNS, err := neutron.Subnets().GetRouterNS("ca95888f-5f4e-4337-9a0d-43bace66373e")
+	if err != nil {
+		glog.Errorf("Provider get routerNS failed: ", err)
+		return
+	}
+	fmt.Println("%s", routerNS)
 
 	/*network := &types.Network{
 		Uid:  "c2f383a7-1c80-4f71-b987-39214b1597a2",
@@ -441,7 +520,7 @@ func main() {
 	}
 	fmt.Println("%v", ListNetworkResponse)*/
 
-	/*err = neutron.Networks().DeleteNetwork("488cfc23-0852-4853-bf1b-f17d341cde10")
+	/*err = neutron.Networks().DeleteNetwork("754c5f95-c175-423e-98e0-7178559336dd")
 	fmt.Println("%v", err)
 	if err != nil {
 		glog.Errorf("NetworkProvider delete network failed: ", err)
@@ -456,10 +535,10 @@ func main() {
 	fmt.Println("%v", listSubnetResponse)*/
 
 	/*subnet := &types.Subnet{
-		NetworkID: "c2f383a7-1c80-4f71-b987-39214b1597a2",
-		Name:      "subnet02",
-		Cidr:      "192.168.6.0/24",
-		Gateway:   "192.168.6.1",
+		NetworkID: "e4b375ca-5834-4efa-ab9d-44ab9425091b",
+		Name:      "net3-subnet2",
+		Cidr:      "192.168.31.0/24",
+		Gateway:   "192.168.31.1",
 	}
 	err = neutron.Subnets().CreateSubnet(subnet)
 	if err != nil {
@@ -481,13 +560,38 @@ func main() {
 	if err != nil {
 		glog.Errorf("NetworkProvider delete subnets failed: ", err)
 		return
+	}*/
+
+	/*subnet1 := &types.Subnet{
+		NetworkID: "754c5f95-c175-423e-98e0-7178559336dd",
+		Tenantid:  "414454afc37f4ff395d06e61167f8108",
+		Name:      "net3-sub1",
+		Cidr:      "192.168.30.0/24",
 	}
 
-	/*err = neutron.Pods().SetupPod("testPodName1", "testNamespace", "37d7676c80c3", getNetworkResponse, "docker")
+	subnet2 := &types.Subnet{
+		NetworkID: "754c5f95-c175-423e-98e0-7178559336dd",
+		Tenantid:  "414454afc37f4ff395d06e61167f8108",
+		Name:      "net3-sub2",
+		Cidr:      "192.168.31.0/24",
+	}
+
+	/*err = neutron.Subnets().ConnectSubnets(subnet1, subnet2)
+	if err != nil {
+		glog.Errorf("NetworkProvider Connet subnets failed: ", err)
+		return
+	}*/
+	/*err = neutron.Subnets().DisconnectSubnets(subnet1, subnet2)
+	if err != nil {
+		glog.Errorf("NetworkProvider Connet subnets failed: ", err)
+		return
+	}
+
+	/*err = neutron.Pods().SetupPod("testPodName1", "testNamespace", "c17601f05328", getNetworkResponse, "docker", "731eafab-1e4f-4ed7-8139-1dd6eb64b878")
 	if err != nil {
 		glog.Errorf("NetworkProvier create setup pod failed:%v", err)
 		return
-	}*/
+	}
 
 	/*err = neutron.Pods().SetupPod("testPodName3", "testNamespace3", "828db65632e0", getNetworkResponse, "docker")
 	if err != nil {
